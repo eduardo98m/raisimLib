@@ -31,12 +31,13 @@ std::vector<Eigen::Matrix4d> transf_matrices(Eigen::Vector3d base_rpy)
         // Finally we concatenate the rotation matrix and position vector
         // To get the transformation matrix of the Hi horizontal frame expressed
         // in the leg base frame
-        Eigen::Matrix4d T_i{
-            {R.coeff(0,0), R.coeff(0,1), R.coeff(0,2), p.coeff(0)},
-            {R.coeff(1,0), R.coeff(1,1), R.coeff(1,2), p.coeff(1)},
-            {R.coeff(2,0), R.coeff(2,1), R.coeff(2,2), p.coeff(2)},
-            {0           , 0           , 0           , 1         }
-        };
+        Eigen::Matrix4d T_i;
+        T_i <<
+            R.coeff(0,0), R.coeff(0,1), R.coeff(0,2), p.coeff(0),
+            R.coeff(1,0), R.coeff(1,1), R.coeff(1,2), p.coeff(1),
+            R.coeff(2,0), R.coeff(2,1), R.coeff(2,2), p.coeff(2),
+            0           , 0           , 0           , 1         
+        ;
 
         T_matrices.push_back(T_i);
     }

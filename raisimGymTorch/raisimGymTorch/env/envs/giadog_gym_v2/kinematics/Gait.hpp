@@ -5,7 +5,10 @@
     The file contains the base gai class for the foot trajectory generation.
 
 */
+#pragma once
+
 #define _USE_MATH_DEFINES
+
 #include <cmath>
 #include <math.h>
 #include <Eigen/Dense>

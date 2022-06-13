@@ -15,8 +15,10 @@
         https://github.com/OpenQuadruped/spot_mini_mini/blob/spot/spotmicro/Kinematics/LegKinematics.py
 
 */
+#pragma once
 
 #define _USE_MATH_DEFINES
+
 #include <cmath>
 #include <math.h>
 #include <algorithm>

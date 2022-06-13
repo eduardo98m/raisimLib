@@ -6,10 +6,12 @@
     the horizontal frames.
 
 */
+#pragma once
 
 #include <cmath>
 #include <vector>
 #include <Eigen/Dense>
+
 #include "../__env__.hpp"
 
 /*

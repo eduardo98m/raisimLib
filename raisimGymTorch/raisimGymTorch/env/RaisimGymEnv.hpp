@@ -35,6 +35,7 @@ class RaisimGymEnv {
   ////////////////////////////////////////
 
   /////// optional methods ///////
+  virtual void getBaseEulerAngles(Eigen::Ref<EigenVec> ea) = 0;
   virtual void curriculumUpdate() {};
   virtual void close() {};
   virtual void setSeed(int seed) {};

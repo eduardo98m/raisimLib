@@ -51,6 +51,7 @@ class ENVIRONMENT : public RaisimGymEnv {
     obDim_ = 34;
     actionDim_ = nJoints_; actionMean_.setZero(actionDim_); actionStd_.setZero(actionDim_);
     obDouble_.setZero(obDim_);
+    baseEulerDouble_.setZero(3);
 
     /// action scaling
     actionMean_ = gc_init_.tail(nJoints_);
@@ -123,6 +124,10 @@ class ENVIRONMENT : public RaisimGymEnv {
     /// convert it to float
     ob = obDouble_.cast<float>();
   }
+  void getBaseEulerAngles(Eigen::Ref<EigenVec> ea) final {
+            /// convert it to float
+            ea = baseEulerDouble_.cast<float>();
+  }
 
   bool isTerminalState(float& terminalReward) final {
     terminalReward = float(terminalRewardCoeff_);
@@ -145,7 +150,7 @@ class ENVIRONMENT : public RaisimGymEnv {
   Eigen::VectorXd gc_init_, gv_init_, gc_, gv_, pTarget_, pTarget12_, vTarget_;
   double terminalRewardCoeff_ = -10.;
   Eigen::VectorXd actionMean_, actionStd_, obDouble_;
-  Eigen::Vector3d bodyLinearVel_, bodyAngularVel_;
+  Eigen::Vector3d bodyLinearVel_, bodyAngularVel_, baseEulerDouble_;
   std::set<size_t> footIndices_;
 
   /// these variables are not in use. They are placed to show you how to create a random number sampler.

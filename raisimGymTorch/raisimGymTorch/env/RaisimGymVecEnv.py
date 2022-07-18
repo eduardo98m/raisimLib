@@ -19,6 +19,7 @@ class RaisimGymVecEnv:
         self.num_obs = self.wrapper.getObDim()
         self.num_acts = self.wrapper.getActionDim()
         self._observation = np.zeros([self.num_envs, self.num_obs], dtype=np.float32)
+        self.base_euler_angles = np.zeros([self.num_envs, 3], dtype=np.float32)
         self.actions = np.zeros([self.num_envs, self.num_acts], dtype=np.float32)
         self.log_prob = np.zeros(self.num_envs, dtype=np.float32)
         self._reward = np.zeros(self.num_envs, dtype=np.float32)
@@ -76,6 +77,10 @@ class RaisimGymVecEnv:
 
     def curriculum_callback(self):
         self.wrapper.curriculumUpdate()
+    
+    def get_base_euler_angles(self):
+        self.wrapper.get_base_euler_angles(self.base_euler_angles)
+        return self.base_euler_angles
 
     @property
     def num_envs(self):

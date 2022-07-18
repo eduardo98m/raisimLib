@@ -90,6 +90,14 @@ class VectorizedEnvironment {
   }
 
 
+  void getBaseEulerAngles(Eigen::Ref<EigenRowMajorMat> &ea) {
+#pragma omp parallel for schedule(auto)
+        for (int i = 0; i < num_envs_; i++)
+          environments_[i]->getBaseEulerAngles(ea.row(i));
+
+    }
+
+
   void step(Eigen::Ref<EigenRowMajorMat> &action,
             Eigen::Ref<EigenVec> &reward,
             Eigen::Ref<EigenBoolVec> &done) {

@@ -9,6 +9,7 @@
 #include "RaisimGymEnv.hpp"
 #include "omp.h"
 #include "Yaml.hpp"
+#include <vector>
 
 namespace raisim {
 
@@ -90,6 +91,13 @@ class VectorizedEnvironment {
   }
 
 
+  void getBaseEulerAngles(Eigen::Ref<EigenRowMajorMat> &ea) {
+#pragma omp parallel for schedule(auto)
+        for (int i = 0; i < num_envs_; i++)
+          environments_[i]->getBaseEulerAngles(ea.row(i));
+
+    }
+
   void step(Eigen::Ref<EigenRowMajorMat> &action,
             Eigen::Ref<EigenVec> &reward,
             Eigen::Ref<EigenBoolVec> &done) {
@@ -140,10 +148,29 @@ class VectorizedEnvironment {
   int getNumOfEnvs() { return num_envs_; }
 
   ////// optional methods //////
-  void curriculumUpdate() {
-    for (auto *env: environments_)
-      env->curriculumUpdate();
-  };
+  void hills(
+    std::vector<double> &frequencies, 
+    std::vector<double> &amplitudes, 
+    std::vector<double> &roughness
+  ) {
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->hills(frequencies[i], amplitudes[i], roughness[i]);
+  }
+
+  void stairs(std::vector<double> &widths, std::vector<double> &heights) {
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->stairs(widths[i], heights[i]);
+  }
+
+  std::vector<double> getTraverability(void) {
+    std::vector<double> travs;
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      travs.push_back(environments_[i]->getTraverability());
+    return travs;
+  }
 
   const std::vector<std::map<std::string, float>>& getRewardInfo() { return rewardInformation_; }
 

@@ -35,7 +35,10 @@ class RaisimGymEnv {
   ////////////////////////////////////////
 
   /////// optional methods ///////
-  virtual void curriculumUpdate() {};
+  virtual void getBaseEulerAngles(Eigen::Ref<EigenVec> ea) = 0;
+  virtual void hills(double frequency, double amplitude, double roughness) = 0;
+  virtual void stairs(double width, double height) = 0;
+  virtual double getTraverability(void) = 0;
   virtual void close() {};
   virtual void setSeed(int seed) {};
   ////////////////////////////////

@@ -76,10 +76,10 @@ class RaisimGymVecEnv:
         self.wrapper.close()
 
     def hills(self, frequency: float, amplitude: float, roughness: float):
-        self.wrapper.hills([frequency], [amplitude], [roughness])
+        self.wrapper.hills(frequency, amplitude, roughness)
 
     def stairs(self, width: float, height: float):
-        self.wrapper.stairs([width], [height])
+        self.wrapper.stairs(width, height)
 
     def getTraverability(self):
         trav = self.wrapper.getTraverability()

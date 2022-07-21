@@ -148,27 +148,23 @@ class VectorizedEnvironment {
   int getNumOfEnvs() { return num_envs_; }
 
   ////// optional methods //////
-  void hills(
-    std::vector<double> &frequencies, 
-    std::vector<double> &amplitudes, 
-    std::vector<double> &roughness
-  ) {
+  void hills(double frequencies, double amplitudes, double roughness) {
     #pragma omp parallel for schedule(auto)
     for (int i = 0; i < num_envs_; i++)
-      environments_[i]->hills(frequencies[i], amplitudes[i], roughness[i]);
+      environments_[i]->hills(frequencies, amplitudes, roughness);
   }
 
-  void stairs(std::vector<double> &widths, std::vector<double> &heights) {
+  void stairs(double widths, double heights) {
     #pragma omp parallel for schedule(auto)
     for (int i = 0; i < num_envs_; i++)
-      environments_[i]->stairs(widths[i], heights[i]);
+      environments_[i]->stairs(widths, heights);
   }
 
   std::vector<double> getTraverability(void) {
-    std::vector<double> travs;
+    std::vector<double> travs(num_envs_);
     #pragma omp parallel for schedule(auto)
     for (int i = 0; i < num_envs_; i++)
-      travs.push_back(environments_[i]->getTraverability());
+      travs[i] = environments_[i]->getTraverability();
     return travs;
   }
 

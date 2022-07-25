@@ -77,6 +77,15 @@ class RaisimGymVecEnv:
 
     def curriculum_callback(self):
         self.wrapper.curriculumUpdate()
+    def hills(self, frequency: float, amplitude: float, roughness: float):
+        self.wrapper.hills(frequency, amplitude, roughness)
+
+    def stairs(self, width: float, height: float):
+        self.wrapper.stairs(width, height)
+
+    def getTraverability(self):
+        trav = self.wrapper.getTraverability()
+        return trav
     
     def get_base_euler_angles(self):
         self.wrapper.get_base_euler_angles(self.base_euler_angles)

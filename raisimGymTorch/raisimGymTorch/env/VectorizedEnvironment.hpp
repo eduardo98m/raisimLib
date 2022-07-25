@@ -9,6 +9,7 @@
 #include "RaisimGymEnv.hpp"
 #include "omp.h"
 #include "Yaml.hpp"
+#include <vector>
 
 namespace raisim {
 
@@ -148,10 +149,25 @@ class VectorizedEnvironment {
   int getNumOfEnvs() { return num_envs_; }
 
   ////// optional methods //////
-  void curriculumUpdate() {
-    for (auto *env: environments_)
-      env->curriculumUpdate();
-  };
+  void hills(double frequencies, double amplitudes, double roughness) {
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->hills(frequencies, amplitudes, roughness);
+  }
+
+  void stairs(double widths, double heights) {
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->stairs(widths, heights);
+  }
+
+  std::vector<double> getTraverability(void) {
+    std::vector<double> travs(num_envs_);
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      travs[i] = environments_[i]->getTraverability();
+    return travs;
+  }
 
   const std::vector<std::map<std::string, float>>& getRewardInfo() { return rewardInformation_; }
 

@@ -83,8 +83,8 @@ class RaisimGymVecEnv:
     def stairs(self, width: float, height: float):
         self.wrapper.stairs(width, height)
 
-    def getTraverability(self):
-        trav = self.wrapper.getTraverability()
+    def getTraversability(self):
+        trav = self.wrapper.getTraversability()
         return trav
     
     def get_base_euler_angles(self):

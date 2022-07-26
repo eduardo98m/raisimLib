@@ -161,11 +161,11 @@ class VectorizedEnvironment {
       environments_[i]->stairs(widths, heights);
   }
 
-  std::vector<double> getTraverability(void) {
+  std::vector<double> getTraversability(void) {
     std::vector<double> travs(num_envs_);
     #pragma omp parallel for schedule(auto)
     for (int i = 0; i < num_envs_; i++)
-      travs[i] = environments_[i]->getTraverability();
+      travs[i] = environments_[i]->getTraversability();
     return travs;
   }
 

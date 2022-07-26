@@ -140,8 +140,38 @@ class ENVIRONMENT : public RaisimGymEnv {
     terminalReward = 0.f;
     return false;
   }
-
+  /**
+  * @brief  (Not in use)
+  * @param  None
+  * @return None
+  */
   void curriculumUpdate() { };
+  /**
+   * @brief Create the training terrain that contains hills (Not in use)
+   * [Placeholder function for this environment]
+   * @param frequency How often each hill appears.
+   *      Recommended range: [0.00, 0.35] 
+   * @param amplitude Height of the hills.
+   *      Recommended range: [0.00, 2.00]
+   * @param roughness Terrain roughness.
+   *      Recommended range: [0.00, 0.06] 
+   */
+  void hills(double frequency, double amplitude, double roughness){ };
+  /**
+   * @brief Create the training terrain that contains stairs (Not in use)
+   * [Placeholder function for this environment]
+   * @param width Width of each step.
+   * @param height Height of each step.
+   */
+  void stairs(double width, double height){ };
+  /**
+   * @brief Get the Traverability object (Not in use)
+   * [Placeholder function for this environment]
+   * @param trav 
+   */
+  double getTraversability(void){ 
+    return 0.0;
+  };
 
  private:
   int gcDim_, gvDim_, nJoints_;

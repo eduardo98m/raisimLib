@@ -42,7 +42,7 @@ PYBIND11_MODULE(RAISIMGYM_TORCH_ENV_NAME, m) {
     .def("setObStatistics", &VectorizedEnvironment<ENVIRONMENT>::setObStatistics)
     .def("hills", &VectorizedEnvironment<ENVIRONMENT>::hills)
     .def("stairs", &VectorizedEnvironment<ENVIRONMENT>::stairs)
-    .def("getTraverability", &VectorizedEnvironment<ENVIRONMENT>::getTraverability)
+    .def("getTraversability", &VectorizedEnvironment<ENVIRONMENT>::getTraversability)
     .def(py::pickle(
         [](const VectorizedEnvironment<ENVIRONMENT> &p) { // __getstate__ --> Pickling to Python
             /* Return a tuple that fully encodes the state of the object */

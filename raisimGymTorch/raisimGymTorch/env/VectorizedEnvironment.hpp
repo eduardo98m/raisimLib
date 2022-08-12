@@ -60,6 +60,7 @@ class VectorizedEnvironment {
     }
 
     obDim_ = environments_[0]->getObDim();
+    ob_idx_dict_ = environments_[0]->getObIndexDict();
     actionDim_ = environments_[0]->getActionDim();
     RSFATAL_IF(obDim_ == 0 || actionDim_ == 0, "Observation/Action dimension must be defined in the constructor of each environment!")
 
@@ -145,6 +146,7 @@ class VectorizedEnvironment {
   }
 
   int getObDim() { return obDim_; }
+  std::map<std::string, std::vector<int>> getObIndexDict() { return ob_idx_dict_; }
   int getActionDim() { return actionDim_; }
   int getNumOfEnvs() { return num_envs_; }
 
@@ -214,6 +216,7 @@ class VectorizedEnvironment {
 
   int num_envs_ = 1;
   int obDim_ = 0, actionDim_ = 0;
+  std::map<std::string, std::vector<int>> ob_idx_dict_;
   bool recordVideo_=false, render_=false;
   std::string resourceDir_;
   Yaml::Node cfg_;

@@ -73,6 +73,10 @@ class PPO:
         self.actions_log_prob = None
         self.actor_obs = None
 
+    def update_n_steps(self, num_transitions_per_env):
+        self.num_transitions_per_env = num_transitions_per_env
+        self.storage.update_n_steps(num_transitions_per_env)
+
     def act(self, actor_obs):
         self.actor_obs = actor_obs
         with torch.no_grad():

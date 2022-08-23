@@ -34,10 +34,31 @@ class RolloutStorage:
         self.sigma_tc = torch.from_numpy(self.sigma).to(self.device)
 
         self.num_transitions_per_env = num_transitions_per_env
+        self.critic_obs_shape = critic_obs_shape
+        self.actor_obs_shape = actor_obs_shape
+        self.actions_shape = actions_shape
         self.num_envs = num_envs
         self.device = device
 
         self.step = 0
+
+    def update_n_steps(self, num_transitions_per_env):
+        # Core
+        self.critic_obs = np.zeros([num_transitions_per_env, self.num_envs, *self.critic_obs_shape], dtype=np.float32)
+        self.actor_obs = np.zeros([num_transitions_per_env, self.num_envs, *self.actor_obs_shape], dtype=np.float32)
+        self.rewards = np.zeros([num_transitions_per_env, self.num_envs, 1], dtype=np.float32)
+        self.actions = np.zeros([num_transitions_per_env, self.num_envs, *self.actions_shape], dtype=np.float32)
+        self.dones = np.zeros([num_transitions_per_env, self.num_envs, 1], dtype=np.bool)
+
+        # For PPO
+        self.actions_log_prob = np.zeros([num_transitions_per_env, self.num_envs, 1], dtype=np.float32)
+        self.values = np.zeros([num_transitions_per_env, self.num_envs, 1], dtype=np.float32)
+        self.returns = np.zeros([num_transitions_per_env, self.num_envs, 1], dtype=np.float32)
+        self.advantages = np.zeros([num_transitions_per_env, self.num_envs, 1], dtype=np.float32)
+        self.mu = np.zeros([num_transitions_per_env, self.num_envs, *self.actions_shape], dtype=np.float32)
+        self.sigma = np.zeros([num_transitions_per_env, self.num_envs, *self.actions_shape], dtype=np.float32)
+
+        self.num_transitions_per_env = num_transitions_per_env
 
     def add_transitions(self, actor_obs, critic_obs, actions, mu, sigma, rewards, dones, actions_log_prob):
         if self.step >= self.num_transitions_per_env:

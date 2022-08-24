@@ -80,6 +80,9 @@ class RaisimGymVecEnv:
         self.wrapper.curriculumUpdate()
     def hills(self, frequency: float, amplitude: float, roughness: float):
         self.wrapper.hills(frequency, amplitude, roughness)
+    
+    def cellular_steps(self, frequency: float, amplitude: float):
+        self.wrapper.cellularSteps(frequency, amplitude)
 
     def stairs(self, width: float, height: float):
         self.wrapper.stairs(width, height)

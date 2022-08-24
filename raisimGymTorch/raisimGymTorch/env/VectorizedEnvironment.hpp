@@ -163,6 +163,11 @@ class VectorizedEnvironment {
       environments_[i]->stairs(widths, heights);
   }
 
+  void cellularSteps(double frequencies, double amplitudes) {
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->cellularSteps(frequencies, amplitudes);
+  }
   std::vector<double> getTraversability(void) {
     std::vector<double> travs(num_envs_);
     #pragma omp parallel for schedule(auto)

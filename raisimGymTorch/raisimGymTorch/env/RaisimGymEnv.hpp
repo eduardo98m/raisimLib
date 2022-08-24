@@ -39,6 +39,7 @@ class RaisimGymEnv {
   virtual void curriculumUpdate() {};
   virtual void hills(double frequency, double amplitude, double roughness) = 0;
   virtual void stairs(double width, double height) = 0;
+  virtual void cellularSteps(double frequency, double amplitude) {};
   virtual double getTraversability(void) = 0;
   virtual void close() {};
   virtual void setSeed(int seed) {};

@@ -16,24 +16,24 @@ class Actor:
         self.action_mean = None
 
     def sample(self, obs):
-        self.action_mean = self.architecture.architecture(obs).cpu().numpy()
+        self.action_mean = self.architecture(obs).cpu().numpy()
         actions, log_prob = self.distribution.sample(self.action_mean)
         return actions, log_prob
 
     def evaluate(self, obs, actions):
-        self.action_mean = self.architecture.architecture(obs)
+        self.action_mean = self.architecture(obs)
         return self.distribution.evaluate(self.action_mean, actions)
 
     def parameters(self):
         return [*self.architecture.parameters(), *self.distribution.parameters()]
 
     def noiseless_action(self, obs):
-        return self.architecture.architecture(torch.from_numpy(obs).to(self.device))
+        return self.architecture(torch.from_numpy(obs).to(self.device))
 
     def save_deterministic_graph(self, file_name, example_input, device='cpu'):
-        transferred_graph = torch.jit.trace(self.architecture.architecture.to(device), example_input)
+        transferred_graph = torch.jit.trace(self.architecture.to(device), example_input)
         torch.jit.save(transferred_graph, file_name)
-        self.architecture.architecture.to(self.device)
+        self.architecture.to(self.device)
 
     def deterministic_parameters(self):
         return self.architecture.parameters()
@@ -96,6 +96,64 @@ class MLP(nn.Module):
         [torch.nn.init.orthogonal_(module.weight, gain=scales[idx]) for idx, module in
          enumerate(mod for mod in sequential if isinstance(mod, nn.Linear))]
 
+class Teacher(nn.Module):
+    def __init__(
+            self, 
+            shape, 
+            non_priv_range, 
+            priv_range, 
+            actionvation_fn, 
+            output_size
+        ):
+        super(Teacher, self).__init__()
+        self.activation_fn = actionvation_fn
+        self.non_priv_shape = non_priv_range
+        self.priv_shape = priv_range
+        self.input_shape = [
+            self.non_priv_shape[1] + self.priv_shape[1] - \
+            (self.non_priv_shape[0] + self.priv_shape[0])
+        ]
+        self.output_shape = [output_size]
+
+        encoder_modules = [
+            nn.Linear(priv_range[1] - priv_range[0], 72),
+            self.activation_fn(),
+            nn.Linear(72, 64),
+            self.activation_fn()
+        ]
+        scale = [np.sqrt(2)] * 2
+        self.encoder = nn.Sequential(*encoder_modules)
+        self.init_weights(self.encoder, scale)
+
+        classifier_modules = [
+            nn.Linear(64 + non_priv_range[1] - non_priv_range[0], shape[0]), 
+            self.activation_fn()
+        ]
+        scale = [np.sqrt(2)]
+
+        for idx in range(len(shape)-1):
+            classifier_modules.append(nn.Linear(shape[idx], shape[idx+1]))
+            classifier_modules.append(self.activation_fn())
+            scale.append(np.sqrt(2))
+
+        classifier_modules.append(nn.Linear(shape[-1], output_size))
+        self.classifier = nn.Sequential(*classifier_modules)
+        scale.append(np.sqrt(2))
+        self.init_weights(self.classifier, scale)
+
+    @staticmethod
+    def init_weights(sequential, scales):
+        [torch.nn.init.orthogonal_(module.weight, gain=scales[idx]) for idx, module in
+         enumerate(mod for mod in sequential if isinstance(mod, nn.Linear))]
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        priv_data = x[:, self.priv_shape[0]:self.priv_shape[1]]
+        non_priv_data = x[:, self.non_priv_shape[0]:self.non_priv_shape[1]]
+
+        x = self.encoder(priv_data)
+        x = torch.cat((x, non_priv_data), 1)
+
+        return self.classifier(x)
 
 class MultivariateGaussianDiagonalCovariance(nn.Module):
     def __init__(self, dim, size, init_std, fast_sampler, seed=0):

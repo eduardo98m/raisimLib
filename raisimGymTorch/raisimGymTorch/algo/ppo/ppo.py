@@ -58,8 +58,6 @@ class PPO:
         self.use_clipped_value_loss = use_clipped_value_loss
 
         # Log
-        self.log_dir = os.path.join(log_dir, datetime.now().strftime('%b%d_%H-%M-%S'))
-        self.writer = SummaryWriter(log_dir=self.log_dir, flush_secs=10)
         self.tot_timesteps = 0
         self.tot_time = 0
 
@@ -94,17 +92,6 @@ class PPO:
         self.storage.compute_returns(last_values.to(self.device), self.critic, self.gamma, self.lam)
         mean_value_loss, mean_surrogate_loss, infos = self._train_step(log_this_iteration)
         self.storage.clear()
-
-        if log_this_iteration:
-            self.log({**locals(), **infos, 'it': update})
-
-    def log(self, variables):
-        self.tot_timesteps += self.num_transitions_per_env * self.num_envs
-        mean_std = self.actor.distribution.std.mean()
-        self.writer.add_scalar('PPO/value_function', variables['mean_value_loss'], variables['it'])
-        self.writer.add_scalar('PPO/surrogate', variables['mean_surrogate_loss'], variables['it'])
-        self.writer.add_scalar('PPO/mean_noise_std', mean_std.item(), variables['it'])
-        self.writer.add_scalar('PPO/learning_rate', self.learning_rate, variables['it'])
 
     def _train_step(self, log_this_iteration):
         mean_value_loss = 0

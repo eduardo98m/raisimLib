@@ -174,6 +174,12 @@ class VectorizedEnvironment {
     for (int i = 0; i < num_envs_; i++)
       environments_[i]->steps(widths, heights);
   }
+
+  void slope(double slope, double roughness) {
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->slope(slope, roughness);
+  }
   std::vector<double> getTraversability(void) {
     std::vector<double> travs(num_envs_);
     #pragma omp parallel for schedule(auto)

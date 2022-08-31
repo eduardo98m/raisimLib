@@ -87,6 +87,9 @@ class RaisimGymVecEnv:
     def stairs(self, width: float, height: float):
         self.wrapper.stairs(width, height)
 
+    def steps(self, width: float, height: float):
+        self.wrapper.steps(width, height)
+
     def getTraversability(self):
         trav = self.wrapper.getTraversability()
         return trav

@@ -188,6 +188,12 @@ class VectorizedEnvironment {
     return travs;
   }
 
+  void curriculumUpdate() {
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->curriculumUpdate();
+  }
+
   const std::vector<std::map<std::string, float>>& getRewardInfo() { return rewardInformation_; }
 
  private:

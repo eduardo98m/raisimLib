@@ -78,6 +78,7 @@ class RaisimGymVecEnv:
 
     def curriculum_callback(self):
         self.wrapper.curriculumUpdate()
+    
     def hills(self, frequency: float, amplitude: float, roughness: float):
         self.wrapper.hills(frequency, amplitude, roughness)
     

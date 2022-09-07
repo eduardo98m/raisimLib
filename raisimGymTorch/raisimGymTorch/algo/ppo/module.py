@@ -95,6 +95,10 @@ class MLP(nn.Module):
     def init_weights(sequential, scales):
         [torch.nn.init.orthogonal_(module.weight, gain=scales[idx]) for idx, module in
          enumerate(mod for mod in sequential if isinstance(mod, nn.Linear))]
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        
+        return self.architecture(x)
 
 class Teacher(nn.Module):
     def __init__(

@@ -18,7 +18,10 @@ class RaisimGymVecEnv:
         self.wrapper = impl
         self.num_obs = self.wrapper.getObDim()
         self.num_acts = self.wrapper.getActionDim()
-        self.obs_index_dict = self.wrapper.getObIndexDict()
+        try:
+            self.obs_index_dict = self.wrapper.getObIndexDict()
+        except:
+            pass
         self._observation = np.zeros([self.num_envs, self.num_obs], dtype=np.float32)
         self.base_euler_angles = np.zeros([self.num_envs, 3], dtype=np.float32)
         self.actions = np.zeros([self.num_envs, self.num_acts], dtype=np.float32)
@@ -97,6 +100,10 @@ class RaisimGymVecEnv:
     def getTraversability(self):
         trav = self.wrapper.getTraversability()
         return trav
+    
+    def getSpeed(self):
+        speed = self.wrapper.getSpeed()
+        return speed
     
     def get_base_euler_angles(self):
         self.wrapper.get_base_euler_angles(self.base_euler_angles)

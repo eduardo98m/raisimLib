@@ -188,6 +188,14 @@ class VectorizedEnvironment {
     return travs;
   }
 
+  std::vector<double> getSpeed(void) {
+    std::vector<double> speed(num_envs_);
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      speed[i] = environments_[i]->getSpeed();
+    return speed;
+  }
+
   void curriculumUpdate() {
     #pragma omp parallel for schedule(auto)
     for (int i = 0; i < num_envs_; i++)

@@ -43,6 +43,7 @@ class RaisimGymEnv {
   virtual void steps(double width, double height) {};
   virtual void slope(double slope, double roughness) {};
   virtual double getTraversability(void) = 0;
+  virtual double getSpeed(void) {return 0.0;};
   virtual void close() {};
   virtual void setSeed(int seed) {};
   ////////////////////////////////

@@ -48,6 +48,10 @@ PYBIND11_MODULE(RAISIMGYM_TORCH_ENV_NAME, m) {
     .def("slope", &VectorizedEnvironment<ENVIRONMENT>::slope)
     .def("getTraversability", &VectorizedEnvironment<ENVIRONMENT>::getTraversability)
     .def("getSpeed", &VectorizedEnvironment<ENVIRONMENT>::getSpeed)
+    .def("getMaxTorque", &VectorizedEnvironment<ENVIRONMENT>::getMaxTorque)
+    .def("getPower", &VectorizedEnvironment<ENVIRONMENT>::getPower)
+    .def("getFroude", &VectorizedEnvironment<ENVIRONMENT>::getFroude)
+    .def("getProjSpeed", &VectorizedEnvironment<ENVIRONMENT>::getProjSpeed)
     .def("curriculumUpdate", &VectorizedEnvironment<ENVIRONMENT>::curriculumUpdate)
     .def(py::pickle(
         [](const VectorizedEnvironment<ENVIRONMENT> &p) { // __getstate__ --> Pickling to Python

@@ -44,6 +44,11 @@ class RaisimGymEnv {
   virtual void slope(double slope, double roughness) {};
   virtual double getTraversability(void) = 0;
   virtual double getSpeed(void) {return 0.0;};
+  // Quadruped statistics
+  virtual double get_max_torque(void){return 0.0;};
+  virtual double get_power(void){return 0.0;};
+  virtual double get_froude(void){return 0.0;};
+  virtual double get_proj_speed(void){return 0.0;};
   virtual void close() {};
   virtual void setSeed(int seed) {};
   ////////////////////////////////

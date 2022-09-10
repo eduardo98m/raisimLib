@@ -196,6 +196,38 @@ class VectorizedEnvironment {
     return speed;
   }
 
+  std::vector<double> getMaxTorque(void){
+    std::vector<double> torque(num_envs_);
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      torque[i] = environments_[i]->get_max_torque();
+    return torque;
+  }
+
+  std::vector<double> getPower(void){
+    std::vector<double> power(num_envs_);
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      power[i] = environments_[i]->get_power();
+    return power;
+  }
+
+  std::vector<double> getFroude(void){
+    std::vector<double> froude(num_envs_);
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      froude[i] = environments_[i]->get_froude();
+    return froude;
+  }
+
+  std::vector<double> getProjSpeed(void){
+    std::vector<double> speed(num_envs_);
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      speed[i] = environments_[i]->get_proj_speed();
+    return speed;
+  }
+  
   void curriculumUpdate() {
     #pragma omp parallel for schedule(auto)
     for (int i = 0; i < num_envs_; i++)

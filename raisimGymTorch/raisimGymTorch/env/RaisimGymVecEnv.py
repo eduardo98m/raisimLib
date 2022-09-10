@@ -105,6 +105,19 @@ class RaisimGymVecEnv:
         speed = self.wrapper.getSpeed()
         return speed
     
+    def get_projected_speed(self):
+        speed = self.wrapper.getProjSpeed()
+        return speed
+    
+    def get_max_torque(self):
+        return self.wrapper.getMaxTorque()
+    
+    def get_froude(self):
+        return self.wrapper.getFroude()
+    
+    def get_power(self):
+        return self.wrapper.getPower()
+    
     def get_base_euler_angles(self):
         self.wrapper.get_base_euler_angles(self.base_euler_angles)
         return self.base_euler_angles

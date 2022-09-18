@@ -21,8 +21,8 @@ namespace raisim {
 class RaisimGymEnv {
 
  public:
-  explicit RaisimGymEnv (std::string resourceDir, const Yaml::Node& cfg) :
-      resourceDir_(std::move(resourceDir)), cfg_(cfg) { }
+  explicit RaisimGymEnv (std::string resourceDir, const Yaml::Node& cfg, int port=8080) :
+      resourceDir_(std::move(resourceDir)), cfg_(cfg), port_(port) { }
 
   virtual ~RaisimGymEnv() { if(server_) server_->killServer(); };
 
@@ -77,6 +77,7 @@ class RaisimGymEnv {
   std::map<std::string, std::vector<int>> ob_idx_dict_;
   std::unique_ptr<raisim::RaisimServer> server_;
   raisim::Reward rewards_;
+  int port_;
 };
 }
 

@@ -414,6 +414,8 @@ class RaisimServer final {
   inline void launchServer(int port = 8080) {
     raisimPort_ = port;
 
+    std::cout << "Connecting to port " << port << "\n";
+
     threadResult_ = std::async(std::launch::async, [this] {
       serverThread_ = std::thread(&raisim::RaisimServer::loop, this);
       return true;

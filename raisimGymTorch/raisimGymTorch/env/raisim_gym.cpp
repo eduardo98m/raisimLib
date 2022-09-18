@@ -19,7 +19,7 @@ int THREAD_COUNT = 1;
 
 PYBIND11_MODULE(RAISIMGYM_TORCH_ENV_NAME, m) {
   py::class_<VectorizedEnvironment<ENVIRONMENT>>(m, RSG_MAKE_STR(ENVIRONMENT_NAME))
-    .def(py::init<std::string, std::string>(), py::arg("resourceDir"), py::arg("cfg"))
+    .def(py::init<std::string, std::string, int>(), py::arg("resourceDir"), py::arg("cfg"), py::arg("port"))
     .def("init", &VectorizedEnvironment<ENVIRONMENT>::init)
     .def("reset", &VectorizedEnvironment<ENVIRONMENT>::reset)
     .def("observe", &VectorizedEnvironment<ENVIRONMENT>::observe)
@@ -56,15 +56,15 @@ PYBIND11_MODULE(RAISIMGYM_TORCH_ENV_NAME, m) {
     .def(py::pickle(
         [](const VectorizedEnvironment<ENVIRONMENT> &p) { // __getstate__ --> Pickling to Python
             /* Return a tuple that fully encodes the state of the object */
-            return py::make_tuple(p.getResourceDir(), p.getCfgString());
+            return py::make_tuple(p.getResourceDir(), p.getCfgString(), p.getPort());
         },
         [](py::tuple t) { // __setstate__ - Pickling from Python
-            if (t.size() != 2) {
+            if (t.size() != 3) {
               throw std::runtime_error("Invalid state!");
             }
 
             /* Create a new C++ instance */
-            VectorizedEnvironment<ENVIRONMENT> p(t[0].cast<std::string>(), t[1].cast<std::string>());
+            VectorizedEnvironment<ENVIRONMENT> p(t[0].cast<std::string>(), t[1].cast<std::string>(), t[2].cast<int>());
 
             return p;
         }

@@ -159,6 +159,11 @@ class Teacher(nn.Module):
 
         return self.classifier(x)
 
+    def encoder_forward(self, x: torch.Tensor) -> torch.Tensor:
+        priv_data = x[:, self.priv_shape[0]:self.priv_shape[1]]
+
+        return self.encoder(priv_data)
+
 class MultivariateGaussianDiagonalCovariance(nn.Module):
     def __init__(self, dim, size, init_std, fast_sampler, seed=0):
         super(MultivariateGaussianDiagonalCovariance, self).__init__()

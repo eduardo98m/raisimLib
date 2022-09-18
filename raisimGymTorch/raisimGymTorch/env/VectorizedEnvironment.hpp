@@ -20,8 +20,16 @@ class VectorizedEnvironment {
 
  public:
 
-  explicit VectorizedEnvironment(std::string resourceDir, std::string cfg, bool normalizeObservation=true)
-      : resourceDir_(resourceDir), cfgString_(cfg), normalizeObservation_(normalizeObservation) {
+  explicit VectorizedEnvironment(
+      std::string resourceDir, 
+      std::string cfg, 
+      int port,
+      bool normalizeObservation=true
+    ) : resourceDir_(resourceDir), 
+        cfgString_(cfg), 
+        normalizeObservation_(normalizeObservation),
+        port_(port)
+    {
     Yaml::Parse(cfg_, cfg);
 
     if(&cfg_["render"])
@@ -36,6 +44,7 @@ class VectorizedEnvironment {
 
   const std::string& getResourceDir() const { return resourceDir_; }
   const std::string& getCfgString() const { return cfgString_; }
+  const int getPort() const { return port_; }
 
   void init() {
     THREAD_COUNT = cfg_["num_threads"].template As<int>();
@@ -45,7 +54,7 @@ class VectorizedEnvironment {
     environments_.reserve(num_envs_);
     rewardInformation_.reserve(num_envs_);
     for (int i = 0; i < num_envs_; i++) {
-      environments_.push_back(new ChildEnvironment(resourceDir_, cfg_, render_ && i == 0));
+      environments_.push_back(new ChildEnvironment(resourceDir_, cfg_, render_ && i == 0, port_));
       environments_.back()->setSimulationTimeStep(cfg_["simulation_dt"].template As<double>());
       environments_.back()->setControlTimeStep(cfg_["control_dt"].template As<double>());
       rewardInformation_.push_back(environments_.back()->getRewards().getStdMap());
@@ -284,6 +293,7 @@ class VectorizedEnvironment {
   std::string resourceDir_;
   Yaml::Node cfg_;
   std::string cfgString_;
+  int port_;
 
   /// observation running mean
   bool normalizeObservation_ = true;

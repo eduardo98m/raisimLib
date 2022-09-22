@@ -189,6 +189,11 @@ class VectorizedEnvironment {
     for (int i = 0; i < num_envs_; i++)
       environments_[i]->slope(slope, roughness);
   }
+  void setCommand(double direction_angle, double turning_direction, bool stop){
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->setCommand(direction_angle, turning_direction, stop);
+  }
   std::vector<double> getTraversability(void) {
     std::vector<double> travs(num_envs_);
     #pragma omp parallel for schedule(auto)

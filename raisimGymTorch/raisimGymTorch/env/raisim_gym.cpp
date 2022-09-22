@@ -53,6 +53,7 @@ PYBIND11_MODULE(RAISIMGYM_TORCH_ENV_NAME, m) {
     .def("getFroude", &VectorizedEnvironment<ENVIRONMENT>::getFroude)
     .def("getProjSpeed", &VectorizedEnvironment<ENVIRONMENT>::getProjSpeed)
     .def("curriculumUpdate", &VectorizedEnvironment<ENVIRONMENT>::curriculumUpdate)
+    .def("setCommand", &VectorizedEnvironment<ENVIRONMENT>::setCommand)
     .def(py::pickle(
         [](const VectorizedEnvironment<ENVIRONMENT> &p) { // __getstate__ --> Pickling to Python
             /* Return a tuple that fully encodes the state of the object */

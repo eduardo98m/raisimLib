@@ -121,6 +121,9 @@ class RaisimGymVecEnv:
     def get_base_euler_angles(self):
         self.wrapper.get_base_euler_angles(self.base_euler_angles)
         return self.base_euler_angles
+    
+    def set_command(self, direction_angle: float, turning_direction: float, stop: bool):
+        self.wrapper.setCommand(direction_angle, turning_direction, stop)
 
     @property
     def num_envs(self):

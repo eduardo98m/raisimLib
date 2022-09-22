@@ -51,6 +51,7 @@ class RaisimGymEnv {
   virtual double get_proj_speed(void){return 0.0;};
   virtual void close() {};
   virtual void setSeed(int seed) {};
+  virtual void setCommand(double direction_angle, double turning_direction, bool stop) {};
   ////////////////////////////////
 
   void setSimulationTimeStep(double dt) { simulation_dt_ = dt; world_->setTimeStep(dt); }

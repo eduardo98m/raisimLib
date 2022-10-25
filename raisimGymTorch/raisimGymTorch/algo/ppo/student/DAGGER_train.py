@@ -43,11 +43,13 @@ def train_model(
         for data in train_data:
             inputs = data['obs']
             labels = data['label']
+            actions = data['action']
 
             count += inputs.shape[0]
 
             inputs = inputs.to(device).float()
             labels = labels.to(device).float().reshape((labels.shape[0], -1))
+            actions = actions.to(device).float().reshape((actions.shape[0], -1))
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -225,7 +227,7 @@ if __name__ == '__main__':
 
     optimizer  = optim.Adam(student.parameters(), lr=0.001,  weight_decay=1e-4)
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.995)
-    myLoss    = nn.MSELoss()
+    myLoss    = nn.MSELoss() # AQUI HAY QUE CAMBIAR LA FUNCION DE PERDIDA
     device    = torch.device('cuda' if torch.cuda.is_available() else "cpu")
     print("Device: ", device)
     student = student.to(device)

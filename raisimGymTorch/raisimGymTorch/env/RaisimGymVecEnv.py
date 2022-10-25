@@ -6,20 +6,21 @@
 import numpy as np
 import platform
 import os
-
-
+from raisimGymTorch.env.obs_dict_parser import obs_dict_parser
 class RaisimGymVecEnv:
 
-    def __init__(self, impl, normalize_ob=True, seed=0, clip_obs=10.):
+    def __init__(self, impl, env_dict, normalize_ob=True, seed=0, clip_obs=10.):
         if platform.system() == "Darwin":
             os.environ['KMP_DUPLICATE_LIB_OK']='True'
         self.normalize_ob = normalize_ob
         self.clip_obs = clip_obs
         self.wrapper = impl
+        
         self.num_obs = self.wrapper.getObDim()
         self.num_acts = self.wrapper.getActionDim()
         try:
-            self.obs_index_dict = self.wrapper.getObIndexDict()
+            self.obs_index_dict = obs_dict_parser(self.wrapper.getObIndexDict(), 
+                                                  env_dict["state_variables"])
         except:
             pass
         self._observation = np.zeros([self.num_envs, self.num_obs], dtype=np.float32)

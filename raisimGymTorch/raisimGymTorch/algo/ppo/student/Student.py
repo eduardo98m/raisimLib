@@ -74,10 +74,12 @@ class StudentEncoder(nn.Module):
             tcn_modules.append(nn.LeakyReLU())
         self.tcn = nn.Sequential(*tcn_modules)
         self.fc = nn.Linear(out_tcn_len, 64)
-
+        self.activation = nn.Tanh()
+    
     def forward(self, x):
         x = self.tcn(x)[:,0,:]
-        return self.fc(x)
+        return self.activation(self.fc(x))
+        #return self.fc(x)
 
 class Student(nn.Module):
     def __init__(self, teacher, student_encoder):

@@ -21,9 +21,7 @@ def train_model(
         myLoss: torch.nn.Module, 
         optimizer: torch.optim.Optimizer, 
         scheduler: torch.optim.lr_scheduler, 
-        num_epochs: int,
-        max_train_data: int,
-        max_valid_data: int
+        num_epochs: int
     ) -> torch.nn.Module:
     since = time.time()
 
@@ -38,18 +36,20 @@ def train_model(
         model.train()  # Set model to training mode
         running_loss = 0.0
         count = 0
-        iter_count = 0
 
         # Iterate over data.
-        print(f'{count} / {max_train_data}', end='\r')
+        total_train_data = len(train_data) * batch_size
+        print(f'{count} / {total_train_data}', end='\r')
         for data in train_data:
             inputs = data['obs']
             labels = data['label']
+            actions = data['action']
 
             count += inputs.shape[0]
 
             inputs = inputs.to(device).float()
             labels = labels.to(device).float().reshape((labels.shape[0], -1))
+            actions = actions.to(device).float().reshape((actions.shape[0], -1))
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -70,14 +70,11 @@ def train_model(
 
             # statistics
             running_loss += loss.item()
-            iter_count += 1
-            print(f'{count} / {max_train_data}', end='\r')
-            
-            if count >= max_train_data: break
+            print(f'{count} / {total_train_data}', end='\r')
 
         scheduler.step()
 
-        epoch_loss = running_loss / iter_count
+        epoch_loss = running_loss / len(train_data)
         time_elapsed = time.time() - since_e
 
         print('Train Loss: {:.4f}'.format(epoch_loss))
@@ -85,10 +82,10 @@ def train_model(
         model.eval()  # Set model to eval mode
         running_loss = 0.0
         count = 0
-        iter_count = 0
 
         # Iterate over data.
-        print(f'{count} / {max_valid_data}', end='\r')
+        total_valid_data = len(valid_data) * batch_size
+        print(f'{count} / {total_valid_data}', end='\r')
         for data in valid_data:
             inputs = data['obs']
             labels = data['label']
@@ -112,12 +109,9 @@ def train_model(
 
             # statistics
             running_loss += loss.item()
-            iter_count += 1
-            print(f'{count} / {max_valid_data}', end='\r')
+            print(f'{count} / {total_valid_data}', end='\r')
 
-            if count >= max_valid_data: break
-
-        epoch_loss = running_loss / iter_count
+        epoch_loss = running_loss / len(valid_data)
         time_elapsed = time.time() - since_e
 
         print('Valid Loss: {:.4f}'.format(epoch_loss))
@@ -203,20 +197,6 @@ if __name__ == '__main__':
         help='Dropout que se aplicara durante el entrenamiento',
         metavar='DROPOUT'
     )
-    parser.add_argument(
-        '-m', '--max-train-data',
-        type=int,
-        default=100000,
-        help='Maxima cantidad de datos a usar en el entrenamiento por epoca',
-        metavar='N'
-    )
-    parser.add_argument(
-        '-M', '--max-valid-data',
-        type=int,
-        default=10000,
-        help='Maxima cantidad de datos a usar en el entrenamiento por epoca',
-        metavar='N'
-    )
 
     args = parser.parse_args()
     print(args)
@@ -245,9 +225,9 @@ if __name__ == '__main__':
     if args.pretrained_model != None:
         student.load_state_dict(torch.load(args.pretrained_model))
 
-    optimizer  = optim.Adam(student.parameters(), lr=0.0001,  weight_decay=1e-4)
+    optimizer  = optim.Adam(student.parameters(), lr=0.001,  weight_decay=1e-4)
     scheduler = lr_scheduler.ExponentialLR(optimizer, gamma=0.995)
-    myLoss    = nn.MSELoss()
+    myLoss    = nn.MSELoss() # AQUI HAY QUE CAMBIAR LA FUNCION DE PERDIDA
     device    = torch.device('cuda' if torch.cuda.is_available() else "cpu")
     print("Device: ", device)
     student = student.to(device)
@@ -266,7 +246,5 @@ if __name__ == '__main__':
         myLoss,
         optimizer,
         scheduler,
-        args.epochs,
-        args.max_train_data,
-        args.max_valid_data
+        args.epochs
     )

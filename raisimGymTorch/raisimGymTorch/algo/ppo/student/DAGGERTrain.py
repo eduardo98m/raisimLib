@@ -9,9 +9,9 @@ import torch.optim as optim
 from Student import StudentEncoder
 from datetime import datetime
 from torch.optim import lr_scheduler
-from TourDataset import TourDataset
+from DAGGERDataset import DAGGERDataset
 
-def train_model(
+def train_model_epoch(
         model: torch.nn.Module, 
         batch_size: int,
         device: str,
@@ -21,114 +21,111 @@ def train_model(
         myLoss: torch.nn.Module, 
         optimizer: torch.optim.Optimizer, 
         scheduler: torch.optim.lr_scheduler, 
-        num_epochs: int
+        best_loss: float,
     ) -> torch.nn.Module:
-    since = time.time()
 
-    best_model_wts = copy.deepcopy(model.state_dict())
-    best_loss = float('inf')
 
-    for epoch in range(num_epochs):
-        since_e = time.time()
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
-        print('-' * 10)
+    since_e = time.time()
+    print('-' * 10)
 
-        model.train()  # Set model to training mode
-        running_loss = 0.0
-        count = 0
+    model.train()  # Set model to training mode
+    running_loss = 0.0
+    count = 0
 
-        # Iterate over data.
-        total_train_data = len(train_data) * batch_size
+    # Iterate over data.
+    total_train_data = len(train_data) * batch_size
+    print(f'{count} / {total_train_data}', end='\r')
+    for data in train_data:
+        inputs = data['obs']
+        labels = data['label']
+        actions = data['action']
+
+        count += inputs.shape[0]
+
+        inputs = inputs.to(device).float()
+        labels = labels.to(device).float().reshape((labels.shape[0], -1))
+        actions = actions.to(device).float().reshape((actions.shape[0], -1))
+
+        # zero the parameter gradients
+        optimizer.zero_grad()
+
+        # forward
+        # track history if only in train
+        with torch.set_grad_enabled(True):
+            # TODO: Calculate the action from the student
+            outputs = model(inputs)
+            if torch.isnan(outputs).sum() > 0: 
+                print(f'Nan in output model!')
+                exit(0)
+            # TODO: Use the actions in the loss calculation
+            loss = myLoss(outputs.float(), labels.float())
+            if torch.isnan(loss).sum() > 0:
+                print(f'Nan in loss!')
+                exit(0) 
+            loss.backward()
+            optimizer.step()
+
+        # statistics
+        running_loss += loss.item()
         print(f'{count} / {total_train_data}', end='\r')
-        for data in train_data:
-            inputs = data['obs']
-            labels = data['label']
-            actions = data['action']
 
-            count += inputs.shape[0]
+    scheduler.step()
 
-            inputs = inputs.to(device).float()
-            labels = labels.to(device).float().reshape((labels.shape[0], -1))
-            actions = actions.to(device).float().reshape((actions.shape[0], -1))
+    epoch_loss = running_loss / len(train_data)
+    time_elapsed = time.time() - since_e
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+    print('Train Loss: {:.4f}'.format(epoch_loss))
 
-            # forward
-            # track history if only in train
-            with torch.set_grad_enabled(True):
-                outputs = model(inputs)
-                if torch.isnan(outputs).sum() > 0: 
-                    print(f'Nan in output model!')
-                    exit(0)
-                loss = myLoss(outputs.float(), labels.float())
-                if torch.isnan(loss).sum() > 0:
-                    print(f'Nan in loss!')
-                    exit(0) 
-                loss.backward()
-                optimizer.step()
+    model.eval()  # Set model to eval mode
+    running_loss = 0.0
+    count = 0
 
-            # statistics
-            running_loss += loss.item()
-            print(f'{count} / {total_train_data}', end='\r')
+    # Iterate over data.
+    total_valid_data = len(valid_data) * batch_size
+    print(f'{count} / {total_valid_data}', end='\r')
+    for data in valid_data:
+        inputs = data['obs']
+        labels = data['label']
+        actions = data['action']
 
-        scheduler.step()
+        count += inputs.shape[0]
 
-        epoch_loss = running_loss / len(train_data)
-        time_elapsed = time.time() - since_e
+        inputs = inputs.to(device).float()
+        labels = labels.to(device).float().reshape((labels.shape[0], -1))
+        actions = actions.to(device).float().reshape((actions.shape[0], -1))
 
-        print('Train Loss: {:.4f}'.format(epoch_loss))
+        # forward
+        # track history if only in train
+        with torch.set_grad_enabled(False):
+            outputs = model(inputs)
+            if torch.isnan(outputs).sum() > 0:
+                print(f'(Valid) Nan in output model!')
+                exit(0) 
+            loss = myLoss(outputs.float(), labels.float())
+            if torch.isnan(loss).sum() > 0:
+                print(f'(Valid) Nan in loss!')
+                exit(0) 
 
-        model.eval()  # Set model to eval mode
-        running_loss = 0.0
-        count = 0
-
-        # Iterate over data.
-        total_valid_data = len(valid_data) * batch_size
+        # statistics
+        running_loss += loss.item()
         print(f'{count} / {total_valid_data}', end='\r')
-        for data in valid_data:
-            inputs = data['obs']
-            labels = data['label']
 
-            count += inputs.shape[0]
+    epoch_loss = running_loss / len(valid_data)
+    time_elapsed = time.time() - since_e
 
-            inputs = inputs.to(device).float()
-            labels = labels.to(device).float().reshape((labels.shape[0], -1))
+    print('Valid Loss: {:.4f}'.format(epoch_loss))
 
-            # forward
-            # track history if only in train
-            with torch.set_grad_enabled(False):
-                outputs = model(inputs)
-                if torch.isnan(outputs).sum() > 0:
-                    print(f'(Valid) Nan in output model!')
-                    exit(0) 
-                loss = myLoss(outputs.float(), labels.float())
-                if torch.isnan(loss).sum() > 0:
-                    print(f'(Valid) Nan in loss!')
-                    exit(0) 
+    # TODO: Save both student encoder and regressor
+    # Deep copy the model
+    if best_loss > epoch_loss:
+        print("Model improved from {:.4f} to {:.4f}".format(best_loss, epoch_loss))
+        print("Model saved")
+        best_loss = epoch_loss
+        best_model_wts = copy.deepcopy(model.state_dict())
+        torch.save(best_model_wts, checkpoint)
 
-            # statistics
-            running_loss += loss.item()
-            print(f'{count} / {total_valid_data}', end='\r')
+    print(f'Epoch complete in {time_elapsed // 60}m {time_elapsed % 60}s\n')
 
-        epoch_loss = running_loss / len(valid_data)
-        time_elapsed = time.time() - since_e
-
-        print('Valid Loss: {:.4f}'.format(epoch_loss))
-
-
-        # Deep copy the model
-        if best_loss > epoch_loss:
-            print("Model improved from {:.4f} to {:.4f}".format(best_loss, epoch_loss))
-            print("Model saved")
-            best_loss = epoch_loss
-            best_model_wts = copy.deepcopy(model.state_dict())
-            torch.save(best_model_wts, checkpoint)
-
-        print(f'Epoch complete in {time_elapsed // 60}m {time_elapsed % 60}s\n')
-
-    time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val loss: {:4f}'.format(best_loss))
 
     # load best model weights
@@ -202,7 +199,7 @@ if __name__ == '__main__':
     print(args)
 
     # Cargamos los datos y lo dividimos en entrenamiento y validacion
-    data = TourDataset(args.data_folder, args.history_len)
+    data = DAGGERDataset(args.data_folder, args.history_len)
     train_len = int(len(data) * args.train_split)
     valid_len = len(data) - train_len 
     train_data, valid_data = torch.utils.data.random_split(
@@ -236,6 +233,7 @@ if __name__ == '__main__':
         now = datetime.now().strftime('%Y_%m_%d')
         args.checkpoint_file = f'models/{now}.pth'
 
+    """
     train_model(
         student,
         args.batch_size,
@@ -248,3 +246,4 @@ if __name__ == '__main__':
         scheduler,
         args.epochs
     )
+    """

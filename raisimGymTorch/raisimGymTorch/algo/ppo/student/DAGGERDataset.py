@@ -8,11 +8,13 @@ class DAGGERDataset(Dataset):
     """
         Dataset para cargar datos de entrenamiento.
     """
-    def __init__(self, data_dir: str, history_len: int=60):
+    def __init__(self, data_dir: str, begin_H: int, end_H: int, history_len: int=60):
         # Verificamos que el directorio existe y obtenemos los archivos que 
         # contiene.
         assert os.path.exists(data_dir)
         self.data_dir = data_dir
+        self.begin_H = begin_H 
+        self.end_H = end_H
         self.files = [f for f in os.listdir(data_dir) if f[-4:] == '.npz']
 
         # Cargamos un archivo para saber el numero de pasos
@@ -29,10 +31,12 @@ class DAGGERDataset(Dataset):
         item = {'file': self.files[index_file]}
         data = np.load(f'{self.data_dir}/{self.files[index_file]}')
 
-        item['obs'] = np.zeros((self.history_len, data['obs'].shape[1]))
+        item['H'] = np.zeros((self.history_len, self.end_H - self.begin_H))
         begin_obs = self.history_len-1 - min(self.history_len-1, index_step)
         begin_step = max(0, index_step - self.history_len + 1)
-        item['obs'][begin_obs:] = data['obs'][begin_step: index_step+1]
+
+        item['obs'] = data['obs'][index_step]
+        item['H'][begin_obs:] = data['obs'][begin_step: index_step+1][self.begin_H: self.end_H]
         item['label'] = data['labels'][index_step]
         item['action'] = data['actions'][index_step]
 

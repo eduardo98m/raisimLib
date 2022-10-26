@@ -146,9 +146,6 @@ class Teacher(nn.Module):
         scale.append(np.sqrt(2))
         self.init_weights(self.classifier, scale)
 
-        self.last_output = None
-        self.alpha = alpha
-
     @staticmethod
     def init_weights(sequential, scales):
         [torch.nn.init.orthogonal_(module.weight, gain=scales[idx]) for idx, module in
@@ -160,15 +157,7 @@ class Teacher(nn.Module):
 
         x = self.encoder(priv_data)
         x = torch.cat((x, non_priv_data), 1)
-        output = self.classifier(x)
-
-        if self.last_output == None or self.last_output.shape != output.shape:
-            self.last_output = torch.zeros_like(output)
-        
-        output = output * (1 - self.alpha) + self.last_output * self.alpha
-        self.last_output = output.clone().detach()
-
-        return output
+        return self.classifier(x) 
 
     def encoder_forward(self, x: torch.Tensor) -> torch.Tensor:
         priv_data = x[:, self.priv_shape[0]:self.priv_shape[1]]

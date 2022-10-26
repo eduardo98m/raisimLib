@@ -93,3 +93,9 @@ class Student(nn.Module):
         x = torch.cat((x, obs), 1)
 
         return self.classifier(x)
+
+    def forward_encoder(self, obs, history):
+        encoder_output = self.encoder(history)
+        x = torch.cat((encoder_output, obs), 1)
+
+        return encoder_output, self.classifier(x)

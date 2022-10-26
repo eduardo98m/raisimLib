@@ -6,13 +6,13 @@ import torch.nn as nn
 import torch.utils.data
 import torch.optim as optim
 
-from Student import StudentEncoder
+from Student import Student, StudentEncoder
 from datetime import datetime
 from torch.optim import lr_scheduler
 from DAGGERDataset import DAGGERDataset
 
 def train_model_epoch(
-        model: torch.nn.Module, 
+        model: Student, 
         batch_size: int,
         device: str,
         checkpoint: str,
@@ -36,13 +36,15 @@ def train_model_epoch(
     total_train_data = len(train_data) * batch_size
     print(f'{count} / {total_train_data}', end='\r')
     for data in train_data:
-        inputs = data['obs']
+        obs_inputs = data['obs']
+        H_inputs = data['H']
         labels = data['label']
         actions = data['action']
 
-        count += inputs.shape[0]
+        count += obs_inputs.shape[0]
 
-        inputs = inputs.to(device).float()
+        obs_inputs = obs_inputs.to(device).float()
+        H_inputs = H_inputs.to(device).float()
         labels = labels.to(device).float().reshape((labels.shape[0], -1))
         actions = actions.to(device).float().reshape((actions.shape[0], -1))
 
@@ -52,13 +54,20 @@ def train_model_epoch(
         # forward
         # track history if only in train
         with torch.set_grad_enabled(True):
-            # TODO: Calculate the action from the student
-            outputs = model(inputs)
-            if torch.isnan(outputs).sum() > 0: 
+            encoder_outputs, regressor_outputs = model.forward_encoder(
+                obs_inputs,
+                H_inputs
+            )
+            if torch.isnan(regressor_outputs).sum() > 0: 
                 print(f'Nan in output model!')
                 exit(0)
             # TODO: Use the actions in the loss calculation
-            loss = myLoss(outputs.float(), labels.float())
+            loss = myLoss(
+                encoder_outputs.float(), 
+                labels.float(), 
+                regressor_outputs.float(),
+                actions.float()
+            )
             if torch.isnan(loss).sum() > 0:
                 print(f'Nan in loss!')
                 exit(0) 
@@ -84,26 +93,37 @@ def train_model_epoch(
     total_valid_data = len(valid_data) * batch_size
     print(f'{count} / {total_valid_data}', end='\r')
     for data in valid_data:
-        inputs = data['obs']
+        obs_inputs = data['obs']
+        H_inputs = data['H']
         labels = data['label']
         actions = data['action']
 
-        count += inputs.shape[0]
+        count += obs_inputs.shape[0]
 
-        inputs = inputs.to(device).float()
+        obs_inputs = obs_inputs.to(device).float()
+        H_inputs = H_inputs.to(device).float()
         labels = labels.to(device).float().reshape((labels.shape[0], -1))
         actions = actions.to(device).float().reshape((actions.shape[0], -1))
 
         # forward
         # track history if only in train
         with torch.set_grad_enabled(False):
-            outputs = model(inputs)
-            if torch.isnan(outputs).sum() > 0:
-                print(f'(Valid) Nan in output model!')
-                exit(0) 
-            loss = myLoss(outputs.float(), labels.float())
+            encoder_outputs, regressor_outputs = model.forward_encoder(
+                obs_inputs,
+                H_inputs
+            )
+            if torch.isnan(regressor_outputs).sum() > 0: 
+                print(f'Nan in output model!')
+                exit(0)
+            # TODO: Use the actions in the loss calculation
+            loss = myLoss(
+                encoder_outputs.float(), 
+                labels.float(), 
+                regressor_outputs.float(),
+                actions.float()
+            )
             if torch.isnan(loss).sum() > 0:
-                print(f'(Valid) Nan in loss!')
+                print(f'Nan in loss!')
                 exit(0) 
 
         # statistics
@@ -115,8 +135,6 @@ def train_model_epoch(
 
     print('Valid Loss: {:.4f}'.format(epoch_loss))
 
-    # TODO: Save both student encoder and regressor
-    # Deep copy the model
     if best_loss > epoch_loss:
         print("Model improved from {:.4f} to {:.4f}".format(best_loss, epoch_loss))
         print("Model saved")
@@ -199,7 +217,7 @@ if __name__ == '__main__':
     print(args)
 
     # Cargamos los datos y lo dividimos en entrenamiento y validacion
-    data = DAGGERDataset(args.data_folder, args.history_len)
+    data = DAGGERDataset(args.data_folder, begin_H, end_H, args.history_len)
     train_len = int(len(data) * args.train_split)
     valid_len = len(data) - train_len 
     train_data, valid_data = torch.utils.data.random_split(
@@ -218,7 +236,8 @@ if __name__ == '__main__':
     )
 
     # Cargamos el modelo
-    student = StudentEncoder(args.history_len)
+    encoder = StudentEncoder(args.history_len)
+    student = Student(teacher, encoder)
     if args.pretrained_model != None:
         student.load_state_dict(torch.load(args.pretrained_model))
 

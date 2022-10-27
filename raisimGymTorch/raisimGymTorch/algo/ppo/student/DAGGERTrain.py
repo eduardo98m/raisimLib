@@ -148,7 +148,7 @@ def train_model_epoch(
 
     # load best model weights
     model.load_state_dict(best_model_wts)
-    return model
+    return model, best_loss
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

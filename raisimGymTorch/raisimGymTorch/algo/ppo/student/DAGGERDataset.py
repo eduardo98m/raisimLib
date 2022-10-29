@@ -31,12 +31,11 @@ class DAGGERDataset(Dataset):
 
         item = {'file': self.files[index_file]}
         data = np.load(f'{self.data_dir}/{self.files[index_file]}')
-        item['H'] = np.zeros((self.history_len, self.end_H - self.begin_H + 1))
-        begin_obs = self.history_len-1 - min(self.history_len-1, index_step)
+        item['H'] = np.zeros((self.history_len, self.end_H - self.begin_H ))
+        begin_obs = self.history_len - 1 - min(self.history_len-1, index_step)
         begin_step = max(0, index_step - self.history_len + 1)
-
         item['obs'] = data['obs'][index_step]
-        item['H'][begin_obs:] = data['obs'][begin_step: index_step+1][self.begin_H: self.end_H]
+        item['H'][begin_obs:] = data['obs'][begin_step: index_step+1, self.begin_H: self.end_H]
         item['label'] = data['labels'][index_step]
         item['action'] = data['actions'][index_step]
 

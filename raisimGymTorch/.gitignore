@@ -17,3 +17,5 @@ id_rsa
 raisimGymTorch/env/bin/rsg*
 venv/
 tour/
+student_train/
+student_val/

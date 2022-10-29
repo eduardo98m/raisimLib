@@ -23,8 +23,6 @@ def train_model_epoch(
         scheduler: torch.optim.lr_scheduler, 
         best_loss: float,
     ) -> torch.nn.Module:
-
-
     since_e = time.time()
     print('-' * 10)
 
@@ -136,13 +134,13 @@ def train_model_epoch(
         best_loss = epoch_loss
         best_model_wts = copy.deepcopy(model.state_dict())
         torch.save(best_model_wts, checkpoint)
+        model.load_state_dict(best_model_wts)
 
     print(f'Epoch complete in {time_elapsed // 60}m {time_elapsed % 60}s\n')
 
     print('Best val loss: {:4f}'.format(best_loss))
 
     # load best model weights
-    model.load_state_dict(best_model_wts)
     return model, best_loss
 
 if __name__ == '__main__':

@@ -19,3 +19,4 @@ venv/
 tour/
 student_train/
 student_val/
+models/

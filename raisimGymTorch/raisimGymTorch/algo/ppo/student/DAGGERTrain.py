@@ -31,27 +31,23 @@ def train_model_epoch(
     model.train()  # Set model to training mode
     running_loss = 0.0
     count = 0
-
+    
     # Iterate over data.
     total_train_data = len(train_data) * batch_size
     print(f'{count} / {total_train_data}', end='\r')
     for data in train_data:
         # CONVERT to torch.tensor
-        obs_inputs = torch.tensor(data['obs'], device=device, dtype=torch.float32)
-        H_inputs = torch.tensor(data['H'], device=device, dtype=torch.float32)
-        labels = torch.tensor(data['label'], device=device, dtype=torch.float32)
-        labels = labels.reshape((labels.shape[0], -1))
-        actions = torch.tensor(data['action'], device=device, dtype=torch.float32)
-        actions = actions.reshape((actions.shape[0], -1))
-        
-
-
+        obs_inputs = data['obs'] #torch.tensor(data['obs'], device=device, dtype=torch.float32)
+        H_inputs = data['H']
+        labels = data['label']
+        actions = data['action']
+    
         count += obs_inputs.shape[0]
 
-        #obs_inputs = obs_inputs.to(device).float()
-        #H_inputs = H_inputs.to(device).float()
-        #labels = labels.to(device).float().reshape((labels.shape[0], -1))
-        #actions = actions.to(device).float().reshape((actions.shape[0], -1))
+        obs_inputs = obs_inputs.to(device).float()
+        H_inputs = H_inputs.to(device).float()
+        labels = labels.to(device).float().reshape((labels.shape[0], -1))
+        actions = actions.to(device).float().reshape((actions.shape[0], -1))
 
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -63,6 +59,7 @@ def train_model_epoch(
                 obs_inputs,
                 H_inputs
             )
+
             if torch.isnan(regressor_outputs).sum() > 0: 
                 print(f'Nan in output model!')
                 exit(0)

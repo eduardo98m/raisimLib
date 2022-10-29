@@ -6,10 +6,10 @@ import torch.nn as nn
 import torch.utils.data
 import torch.optim as optim
 
-from Student import Student, StudentEncoder
+from .Student import Student, StudentEncoder
 from datetime import datetime
 from torch.optim import lr_scheduler
-from DAGGERDataset import DAGGERDataset
+from .DAGGERDataset import DAGGERDataset
 
 def train_model_epoch(
         model: Student, 
@@ -36,17 +36,22 @@ def train_model_epoch(
     total_train_data = len(train_data) * batch_size
     print(f'{count} / {total_train_data}', end='\r')
     for data in train_data:
-        obs_inputs = data['obs']
-        H_inputs = data['H']
-        labels = data['label']
-        actions = data['action']
+        # CONVERT to torch.tensor
+        obs_inputs = torch.tensor(data['obs'], device=device, dtype=torch.float32)
+        H_inputs = torch.tensor(data['H'], device=device, dtype=torch.float32)
+        labels = torch.tensor(data['label'], device=device, dtype=torch.float32)
+        labels = labels.reshape((labels.shape[0], -1))
+        actions = torch.tensor(data['action'], device=device, dtype=torch.float32)
+        actions = actions.reshape((actions.shape[0], -1))
+        
+
 
         count += obs_inputs.shape[0]
 
-        obs_inputs = obs_inputs.to(device).float()
-        H_inputs = H_inputs.to(device).float()
-        labels = labels.to(device).float().reshape((labels.shape[0], -1))
-        actions = actions.to(device).float().reshape((actions.shape[0], -1))
+        #obs_inputs = obs_inputs.to(device).float()
+        #H_inputs = H_inputs.to(device).float()
+        #labels = labels.to(device).float().reshape((labels.shape[0], -1))
+        #actions = actions.to(device).float().reshape((actions.shape[0], -1))
 
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -62,12 +67,9 @@ def train_model_epoch(
                 print(f'Nan in output model!')
                 exit(0)
             # TODO: Use the actions in the loss calculation
-            loss = myLoss(
-                encoder_outputs.float(), 
-                labels.float(), 
-                regressor_outputs.float(),
-                actions.float()
-            )
+            loss = myLoss(encoder_outputs.float(), labels.float()) +\
+                   myLoss(regressor_outputs.float(),actions.float())
+            
             if torch.isnan(loss).sum() > 0:
                 print(f'Nan in loss!')
                 exit(0) 
@@ -116,12 +118,8 @@ def train_model_epoch(
                 print(f'Nan in output model!')
                 exit(0)
             # TODO: Use the actions in the loss calculation
-            loss = myLoss(
-                encoder_outputs.float(), 
-                labels.float(), 
-                regressor_outputs.float(),
-                actions.float()
-            )
+            loss = myLoss(encoder_outputs.float(), labels.float()) +\
+                   myLoss(regressor_outputs.float(),actions.float())
             if torch.isnan(loss).sum() > 0:
                 print(f'Nan in loss!')
                 exit(0) 

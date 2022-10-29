@@ -3,6 +3,7 @@ import numpy as np
 
 from typing import Dict, Any
 from torch.utils.data import Dataset, DataLoader
+import torch
 
 class DAGGERDataset(Dataset):
     """
@@ -30,8 +31,7 @@ class DAGGERDataset(Dataset):
 
         item = {'file': self.files[index_file]}
         data = np.load(f'{self.data_dir}/{self.files[index_file]}')
-
-        item['H'] = np.zeros((self.history_len, self.end_H - self.begin_H))
+        item['H'] = np.zeros((self.history_len, self.end_H - self.begin_H + 1))
         begin_obs = self.history_len-1 - min(self.history_len-1, index_step)
         begin_step = max(0, index_step - self.history_len + 1)
 

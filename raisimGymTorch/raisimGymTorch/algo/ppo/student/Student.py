@@ -51,7 +51,7 @@ class TemporalBlock(nn.Module):
         return self.relu(out + res)
 
 class StudentEncoder(nn.Module):
-    def __init__(self, seq_len: int=60, out_tcn_len: int=49, dropout=0.):
+    def __init__(self, seq_len: int=60, out_tcn_len: int=49, dropout=0., old_version = False):
         super().__init__()
 
         self.seq_len = seq_len 
@@ -74,7 +74,10 @@ class StudentEncoder(nn.Module):
             tcn_modules.append(nn.LeakyReLU())
         self.tcn = nn.Sequential(*tcn_modules)
         self.fc = nn.Linear(out_tcn_len, 64)
-        self.activation = nn.Tanh()
+        if old_version:
+            self.activation = nn.Identity()
+        else:
+            self.activation = nn.Tanh()
     
     def forward(self, x):
         x = self.tcn(x)[:,0,:]
@@ -87,6 +90,9 @@ class Student(nn.Module):
 
         self.encoder = student_encoder
         self.classifier = teacher.classifier
+
+        for param in self.classifier.parameters():
+            param.requires_grad = False
 
     def forward(self, obs, history):
         x = self.encoder(history)

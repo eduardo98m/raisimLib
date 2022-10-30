@@ -19,6 +19,11 @@ class Actor:
         self.action_mean = self.architecture(obs).cpu().numpy()
         actions, log_prob = self.distribution.sample(self.action_mean)
         return actions, log_prob
+    
+    def sample_tensor(self, obs):
+        self.action_mean = self.architecture(obs)
+        actions, log_prob = self.distribution.sample(self.action_mean)
+        return actions, log_prob
 
     def evaluate(self, obs, actions):
         self.action_mean = self.architecture(obs)

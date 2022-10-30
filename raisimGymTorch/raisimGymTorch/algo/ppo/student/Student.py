@@ -51,7 +51,11 @@ class TemporalBlock(nn.Module):
         return self.relu(out + res)
 
 class StudentEncoder(nn.Module):
-    def __init__(self, seq_len: int=60, out_tcn_len: int=49, dropout=0., old_version = False):
+    def __init__(self, 
+                seq_len: int=60, 
+                out_tcn_len: int=49, 
+                dropout=0., 
+                old_version = False):
         super().__init__()
 
         self.seq_len = seq_len 
@@ -74,6 +78,7 @@ class StudentEncoder(nn.Module):
             tcn_modules.append(nn.LeakyReLU())
         self.tcn = nn.Sequential(*tcn_modules)
         self.fc = nn.Linear(out_tcn_len, 64)
+        
         if old_version:
             self.activation = nn.Identity()
         else:
@@ -85,14 +90,19 @@ class StudentEncoder(nn.Module):
         #return self.fc(x)
 
 class Student(nn.Module):
-    def __init__(self, teacher, student_encoder):
+    def __init__(self, teacher, student_encoder, disable_grad_on_classifier = True, disable_grad_on_TCN = False):
         super().__init__()
 
         self.encoder = student_encoder
         self.classifier = teacher.classifier
 
-        for param in self.classifier.parameters():
-            param.requires_grad = False
+        if disable_grad_on_classifier:
+            for param in self.classifier.parameters():
+                param.requires_grad = False
+        
+        if disable_grad_on_TCN:
+            for param in self.encoder.parameters():
+                param.requires_grad = False
 
     def forward(self, obs, history):
         x = self.encoder(history)
@@ -105,3 +115,15 @@ class Student(nn.Module):
         x = torch.cat((encoder_output, obs), 1)
 
         return encoder_output, self.classifier(x)
+    
+class StudentRegressor(nn.Module):
+    def __init__(self, classifier, encoder_output_dim, non_priv_dim, output_dim):
+        super().__init__()
+        self.classifier = classifier
+
+        self.input_shape = [encoder_output_dim + non_priv_dim]
+        self.output_shape = [output_dim]
+    
+    def forward(self, x):
+
+        return self.classifier(x)

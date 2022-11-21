@@ -241,7 +241,7 @@ if __name__ == '__main__':
     )
 
     # Cargamos el modelo
-    student = StudentEncoder(args.history_len)
+    student = StudentEncoder(args.history_len, old_version = True)
     if args.pretrained_model != None:
         student.load_state_dict(torch.load(args.pretrained_model))
 

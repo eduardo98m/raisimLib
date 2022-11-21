@@ -46,6 +46,7 @@ PYBIND11_MODULE(RAISIMGYM_TORCH_ENV_NAME, m) {
     .def("cellularSteps", &VectorizedEnvironment<ENVIRONMENT>::cellularSteps)
     .def("steps", &VectorizedEnvironment<ENVIRONMENT>::steps)
     .def("slope", &VectorizedEnvironment<ENVIRONMENT>::slope)
+    .def("demoTerrain", &VectorizedEnvironment<ENVIRONMENT>::demoTerrain)
     .def("getTraversability", &VectorizedEnvironment<ENVIRONMENT>::getTraversability)
     .def("getSpeed", &VectorizedEnvironment<ENVIRONMENT>::getSpeed)
     .def("getMaxTorque", &VectorizedEnvironment<ENVIRONMENT>::getMaxTorque)

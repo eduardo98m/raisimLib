@@ -42,6 +42,7 @@ class RaisimGymEnv {
   virtual void cellularSteps(double frequency, double amplitude) {};
   virtual void steps(double width, double height) {};
   virtual void slope(double slope, double roughness) {};
+  virtual void demoTerrain(int n_objects, double radius) {};
   virtual double getTraversability(void) = 0;
   virtual double getSpeed(void) {return 0.0;};
   // Quadruped statistics

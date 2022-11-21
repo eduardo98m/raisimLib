@@ -98,6 +98,9 @@ class RaisimGymVecEnv:
     def slope(self, slope: float, roughness: float):
         self.wrapper.slope(slope, roughness)
 
+    def demo_terrain(self, n_objects:int, radius:float):
+        self.wrapper.demoTerrain(n_objects, radius)
+
     def getTraversability(self):
         trav = self.wrapper.getTraversability()
         return trav

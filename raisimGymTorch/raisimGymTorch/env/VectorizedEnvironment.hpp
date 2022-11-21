@@ -189,6 +189,13 @@ class VectorizedEnvironment {
     for (int i = 0; i < num_envs_; i++)
       environments_[i]->slope(slope, roughness);
   }
+
+  void demoTerrain(int n_objects, double radius){
+    #pragma omp parallel for schedule(auto)
+    for (int i = 0; i < num_envs_; i++)
+      environments_[i]->demoTerrain(n_objects, radius);
+  }
+  
   void setCommand(double direction_angle, double turning_direction, bool stop){
     #pragma omp parallel for schedule(auto)
     for (int i = 0; i < num_envs_; i++)
